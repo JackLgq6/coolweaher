@@ -4,11 +4,13 @@ import com.bumptech.glide.Glide;
 import com.eg.coolweather.R;
 import com.eg.coolweather.gson.Forecast;
 import com.eg.coolweather.gson.Weather;
+import com.eg.coolweather.service.AutoUpdateService;
 import com.eg.coolweather.utils.HttpUtil;
 import com.eg.coolweather.utils.Utility;
 
 import java.io.IOException;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
@@ -46,6 +48,7 @@ public class WeatherActivity extends AppCompatActivity {
     private ImageView bingPicImg;
     public SwipeRefreshLayout swipeRefresh;
     private String mWeatherId;
+//    public String mWeatherId;
     public DrawerLayout drawerLayout;
     private Button navButton;
 
@@ -140,7 +143,7 @@ public class WeatherActivity extends AppCompatActivity {
      * 根据天气id请求城市天气信息
      * @param weatherId 天气id
      */
-    public void requestWeather(String weatherId) {
+    public void requestWeather(final String weatherId) {
         String weatherUrl = "http://guolin.tech/api/weather?cityid=" + weatherId +
                 "&key=d930d1926ff54aa492360b492b587ad4";
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
@@ -157,6 +160,8 @@ public class WeatherActivity extends AppCompatActivity {
                                     .this).edit();
                             edit.putString("weather", responseText);
                             edit.apply();
+                            //重新对mWeatherId赋值，否则切换城市后下拉刷新出bug
+                            mWeatherId = weather.basic.weatherId;
                             showWeatherInfo(weather);
                         } else {
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败",
@@ -195,11 +200,12 @@ public class WeatherActivity extends AppCompatActivity {
         forecastLayout.removeAllViews();
         for (Forecast forecast : weather.forecastList) {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout,
+
                     false);
             TextView dateText = (TextView) view.findViewById(R.id.date_text);
             TextView infoText = (TextView) view.findViewById(R.id.info_text);
             TextView maxText = (TextView) view.findViewById(R.id.max_text);
-            TextView minText = (TextView) view.findViewById(R.id.min_text) ;
+            TextView minText = (TextView) view.findViewById(R.id.min_text);
             dateText.setText(forecast.date);
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
@@ -217,5 +223,7 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+        Intent intent = new Intent(this, AutoUpdateService.class);
+        startService(intent);
     }
 }

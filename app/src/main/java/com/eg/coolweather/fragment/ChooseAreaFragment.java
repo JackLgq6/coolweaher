@@ -108,6 +108,7 @@ public class ChooseAreaFragment extends Fragment {
                         getActivity().finish();
                     } else if (getActivity() instanceof WeatherActivity) {
                         WeatherActivity weatherActivity = (WeatherActivity) getActivity();
+                        //weatherActivity.mWeatherId = weatherId;
                         weatherActivity.drawerLayout.closeDrawers();
                         weatherActivity.swipeRefresh.setRefreshing(true);
                         weatherActivity.requestWeather(weatherId);
